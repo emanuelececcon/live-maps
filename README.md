@@ -1,6 +1,6 @@
 # LiveMaps
 
-A Paper 26.3 plugin that keeps every map in an item frame up to date. Build, dig, blow things up, let trees grow: a map wall shows the change within seconds, even when nobody stands next to it and even while its own chunk is unloaded.
+A Paper 26.3 plugin that keeps every map in an item frame up to date. Build, dig, blow things up, let trees grow: a map wall shows the change within about ten seconds, even when nobody stands next to it and even while its own chunk is unloaded.
 
 ## What it does
 
