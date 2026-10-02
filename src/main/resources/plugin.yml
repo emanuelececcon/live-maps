@@ -1,0 +1,28 @@
+name: LiveMaps
+version: ${project.version}
+main: io.github.emanuelececcon.livemaps.LiveMapsPlugin
+api-version: "26.3"
+description: Keeps every map in an item frame up to date with the terrain
+authors:
+  - emanuelececcon
+website: https://github.com/emanuelececcon/live-maps
+
+commands:
+  livemaps:
+    description: Map info, reveal the held map, refresh, status and reload
+    usage: /livemaps <info|reveal|refresh|status|reload>
+    aliases: [lm]
+
+permissions:
+  livemaps.info:
+    description: Use /livemaps info to see whether a map updates by itself
+    default: true
+  livemaps.reveal:
+    description: Use /livemaps reveal to draw the whole held map at once
+    default: op
+  livemaps.admin:
+    description: Use /livemaps refresh, status and reload
+    default: op
+    children:
+      livemaps.info: true
+      livemaps.reveal: true

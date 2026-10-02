@@ -1,0 +1,24 @@
+# LiveMaps keeps every map placed in an Item Frame or Glow Item Frame up to date with the terrain.
+# Apply changes with /livemaps reload.
+
+updates:
+  # Block changes (building, mining, explosions, trees growing, water...) are collected for this
+  # many seconds, then only the map pixels they touch are redrawn.
+  delay-seconds: 3
+  # Every loaded chunk that a framed map shows is checked again within this many seconds. This
+  # catches changes that fire no event (/fill, WorldEdit, other plugins). 0 turns it off.
+  sweep-seconds: 120
+
+rendering:
+  # Not vanilla: grass, foliage and leaf litter take the colours their biome defines (for example
+  # the orange Dappled Forest). false = the exact vanilla map colours. After changing it, run
+  # /livemaps refresh to redraw the maps.
+  biome-colors: true
+
+performance:
+  # Chunks read from the world per redraw step. Each one costs roughly 0.05 ms on the main thread;
+  # the drawing itself runs off the main thread. Lower it if a big redraw causes lag.
+  chunks-per-batch: 32
+
+# Worlds whose maps are never updated by LiveMaps (world folder names).
+disabled-worlds: []
