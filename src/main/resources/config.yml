@@ -4,10 +4,10 @@
 updates:
   # Block changes (building, mining, explosions, trees growing, water...) are collected for this
   # many seconds, then only the map pixels they touch are redrawn.
-  delay-seconds: 3
+  delay-seconds: 10
   # Every loaded chunk that a framed map shows is checked again within this many seconds. This
   # catches changes that fire no event (/fill, WorldEdit, other plugins). 0 turns it off.
-  sweep-seconds: 120
+  sweep-seconds: 300
 
 rendering:
   # Not vanilla: grass, foliage and leaf litter take the colours their biome defines (for example

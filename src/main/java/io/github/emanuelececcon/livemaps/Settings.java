@@ -14,9 +14,9 @@ record Settings(int delaySeconds, int sweepSeconds, boolean biomeColors, int chu
         for (String world : config.getStringList("disabled-worlds")) {
             disabled.add(world.toLowerCase(Locale.ROOT));
         }
-        int sweep = config.getInt("updates.sweep-seconds", 120);
+        int sweep = config.getInt("updates.sweep-seconds", 300);
         return new Settings(
-                Math.clamp(config.getInt("updates.delay-seconds", 3), 1, 300),
+                Math.clamp(config.getInt("updates.delay-seconds", 10), 1, 300),
                 sweep <= 0 ? 0 : Math.max(10, sweep),
                 config.getBoolean("rendering.biome-colors", true),
                 Math.clamp(config.getInt("performance.chunks-per-batch", 32), 4, 512),

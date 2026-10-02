@@ -46,8 +46,8 @@ A player carrying a copy of a framed map redraws the area around them in vanilla
 
 | Key | What it does | Default |
 |---|---|---|
-| `updates.delay-seconds` | Block changes are collected this long, then their pixels are redrawn | `3` |
-| `updates.sweep-seconds` | Each loaded chunk shown on a framed map is checked again within this time; `0` turns the sweep off | `120` |
+| `updates.delay-seconds` | Block changes are collected this long, then their pixels are redrawn | `10` |
+| `updates.sweep-seconds` | Each loaded chunk shown on a framed map is checked again within this time; `0` turns the sweep off | `300` |
 | `rendering.biome-colors` | Biome colours for grass, foliage and leaf litter; `false` = exact vanilla colours. Run `/livemaps refresh` after changing it | `true` |
 | `performance.chunks-per-batch` | Chunks snapshotted per step; lower it if a big redraw causes lag | `32` |
 | `disabled-worlds` | World names whose maps LiveMaps never touches | `[]` |
