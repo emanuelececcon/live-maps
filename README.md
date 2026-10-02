@@ -8,7 +8,7 @@ A Paper 26.3 plugin that keeps every map in an item frame up to date. Build, dig
 - **Whole map at once.** When a map goes into a frame, everything the server has already generated in its area is drawn right away. Chunks that were never generated stay blank and fill in as soon as someone explores them. LiveMaps never generates terrain.
 - **Vanilla look.** Pixels are computed with the game's own map algorithm (26.3 `MapItem.update`): colours from the server's block definitions, the top block as vanilla sees it (grass, flowers and snow layers included), height shading with the checkerboard dither, water shaded by depth, and the most common colour per pixel on zoomed-out maps. Biome colours are an optional extra, see below.
 - **Only what changed.** A change redraws the pixels it touches (one block changes one pixel and the pixel south of it, which is shaded against it), not the whole map.
-- **Walls in one command.** `/livemaps fill` puts new maps into the empty frames of a wall so that they join up seamlessly, next to the maps already there or centred on you for a new wall.
+- **Walls in one command.** `/livemaps fill` puts new maps into the empty frames of a wall so that they join up seamlessly, next to the maps already there or centred on you for a new wall. `/livemaps scale` zooms a whole wall in or out around its centre.
 - **Left alone:** locked maps (Cartography Table + Glass Pane), treasure and explorer maps (they keep their own look), maps of a dimension with a ceiling such as the Nether (vanilla never draws those), and worlds listed in `disabled-worlds`.
 
 ## Building a wall
@@ -18,6 +18,7 @@ A Paper 26.3 plugin that keeps every map in an item frame up to date. Build, dig
    - **next to frames that already hold maps**, the new maps continue the grid of the nearest one, with its scale. This extends any wall, also walls made by hand or by other plugins whose maps are not on the vanilla grid;
    - **on a wall without maps**, the middle of the wall shows where you stand. Add a scale for zoomed-out maps: `/livemaps fill 1` (1:2, 256 blocks per map) up to `/livemaps fill 4` (1:16, 2048 blocks). Default 0 (1:1, 128 blocks).
 3. To grow the wall later, hang more empty frames next to it and run `/livemaps fill` again.
+4. To zoom the whole wall in or out, look at it and run `/livemaps scale <0-4>`. Every map on the wall is replaced by a map of the new scale, empty frames are filled too, and the middle of the wall keeps showing the same place. Walls with locked maps are refused (take the locked maps out first). A wall that would cover more than about 100,000 chunks asks for `/livemaps scale <n> confirm`. The old maps are only taken out of the frames: copies of them elsewhere keep their picture but stop updating.
 
 Frames that hold something are never touched. A map always shows north up and east to the right, whichever way the wall faces. Maps made by hand work too: put them in frames and they update by themselves.
 
@@ -47,6 +48,7 @@ A player carrying a copy of a framed map redraws the area around them in vanilla
 |---|---|---|
 | `/livemaps info` | `livemaps.info` (everyone) | For the framed map you look at, or the map in your hand: does it update by itself, and if not, why |
 | `/livemaps fill [scale]` | `livemaps.fill` (everyone) | Puts seamless new maps into the empty frames of the wall you look at, see [Building a wall](#building-a-wall) |
+| `/livemaps scale <0-4> [confirm]` | `livemaps.scale` (everyone) | Replaces the maps of the wall you look at with maps of another scale, around the same centre |
 | `/livemaps reveal` | `livemaps.reveal` (op) | Draws the whole map in your hand from the generated terrain, once |
 | `/livemaps refresh [map id]` | `livemaps.admin` (op) | Redraws all framed maps, or one |
 | `/livemaps status` | `livemaps.admin` (op) | Framed maps, frames, queue and timings |
@@ -85,7 +87,7 @@ A player carrying a copy of a framed map redraws the area around them in vanilla
 | `BiomeTints.java` | Optional biome colours |
 | `MapWriter.java` | Writes pixels into the saved map data |
 | `MapArea.java`, `PixelRect.java` | Map pixel and world coordinates |
-| `WallFiller.java` | `/livemaps fill`: finds the wall, works out the grid, creates the maps |
+| `WallFiller.java` | `/livemaps fill` and `scale`: finds the wall, works out the grid, creates the maps |
 | `MapRevealerMigration.java` | One-time unlock of the maps MapRevealer locked on its walls |
 | `LiveMapsCommand.java` | `/livemaps` |
 

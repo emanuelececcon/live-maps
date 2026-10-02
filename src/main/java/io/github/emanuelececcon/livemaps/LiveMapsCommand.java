@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapView;
 import org.bukkit.util.RayTraceResult;
 
-/** /livemaps info | fill [scale] | reveal | refresh [map id] | status | reload */
+/** /livemaps info | fill [scale] | scale <scale> [confirm] | reveal | refresh [map id] | status | reload */
 final class LiveMapsCommand implements TabExecutor {
 
     private static final String ADMIN = "livemaps.admin";
@@ -34,12 +34,13 @@ final class LiveMapsCommand implements TabExecutor {
         switch (sub) {
             case "info" -> info(sender);
             case "fill" -> fill(sender, args);
+            case "scale" -> scale(sender, args);
             case "reveal" -> reveal(sender);
             case "refresh" -> refresh(sender, args);
             case "status" -> status(sender);
             case "reload" -> reload(sender);
             default -> sender.sendMessage(Component.text(
-                    "Usage: /" + label + " <info|fill [scale]|reveal|refresh [map id]|status|reload>", NamedTextColor.RED));
+                    "Usage: /" + label + " <info|fill [scale]|scale <0-4>|reveal|refresh [map id]|status|reload>", NamedTextColor.RED));
         }
         return true;
     }
@@ -82,26 +83,62 @@ final class LiveMapsCommand implements TabExecutor {
         if (!allowed(sender, "livemaps.fill")) {
             return;
         }
-        Integer scale = null;
-        if (args.length >= 2) {
-            try {
-                scale = Integer.parseInt(args[1]);
-            } catch (NumberFormatException notANumber) {
-                scale = -1;
-            }
-            if (scale < 0 || scale > 4) {
-                sender.sendMessage(Component.text("The scale is 0 (1:1, 128 blocks per map) to 4 (1:16, 2048 blocks).",
-                        NamedTextColor.RED));
-                return;
-            }
-        }
-        ItemFrame frame = lookedAtFrame(player);
-        if (frame == null) {
-            sender.sendMessage(Component.text("Look at one of the wall's item frames (up to 6 blocks away).",
-                    NamedTextColor.RED));
+        Integer scale = args.length >= 2 ? parseScale(sender, args[1]) : null;
+        if (args.length >= 2 && scale == null) {
             return;
         }
-        sender.sendMessage(filler.fill(player, frame, scale));
+        ItemFrame frame = wallFrame(player);
+        if (frame != null) {
+            sender.sendMessage(filler.fill(player, frame, scale));
+        }
+    }
+
+    /** Swaps the maps of the wall the player looks at for maps of another scale, same centre. */
+    private void scale(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(text("Only players can rescale a wall: look at one of its frames."));
+            return;
+        }
+        if (!allowed(sender, "livemaps.scale")) {
+            return;
+        }
+        if (args.length < 2) {
+            sender.sendMessage(Component.text("Usage: /livemaps scale <0-4>, looking at one of the wall's frames."
+                    + " 0 is 1:1 (128 blocks per map), 4 is 1:16 (2048 blocks).", NamedTextColor.RED));
+            return;
+        }
+        Integer scale = parseScale(sender, args[1]);
+        if (scale == null) {
+            return;
+        }
+        boolean confirmed = args.length >= 3 && args[2].equalsIgnoreCase("confirm");
+        ItemFrame frame = wallFrame(player);
+        if (frame != null) {
+            sender.sendMessage(filler.rescale(frame, scale, confirmed));
+        }
+    }
+
+    private static Integer parseScale(CommandSender sender, String argument) {
+        try {
+            int scale = Integer.parseInt(argument);
+            if (scale >= 0 && scale <= 4) {
+                return scale;
+            }
+        } catch (NumberFormatException notANumber) {
+            // reported below
+        }
+        sender.sendMessage(Component.text("The scale is 0 (1:1, 128 blocks per map) to 4 (1:16, 2048 blocks).",
+                NamedTextColor.RED));
+        return null;
+    }
+
+    private static ItemFrame wallFrame(Player player) {
+        ItemFrame frame = lookedAtFrame(player);
+        if (frame == null) {
+            player.sendMessage(Component.text("Look at one of the wall's item frames (up to 6 blocks away).",
+                    NamedTextColor.RED));
+        }
+        return frame;
     }
 
     private void reveal(CommandSender sender) {
@@ -215,6 +252,9 @@ final class LiveMapsCommand implements TabExecutor {
             if (sender.hasPermission("livemaps.fill")) {
                 options.add("fill");
             }
+            if (sender.hasPermission("livemaps.scale")) {
+                options.add("scale");
+            }
             if (sender.hasPermission("livemaps.reveal")) {
                 options.add("reveal");
             }
@@ -224,7 +264,8 @@ final class LiveMapsCommand implements TabExecutor {
             String typed = args[0].toLowerCase(Locale.ROOT);
             return options.stream().filter(option -> option.startsWith(typed)).toList();
         }
-        if (args.length == 2 && args[0].equalsIgnoreCase("fill") && sender.hasPermission("livemaps.fill")) {
+        if (args.length == 2 && (args[0].equalsIgnoreCase("fill") && sender.hasPermission("livemaps.fill")
+                || args[0].equalsIgnoreCase("scale") && sender.hasPermission("livemaps.scale"))) {
             return List.of("0", "1", "2", "3", "4").stream().filter(scale -> scale.startsWith(args[1])).toList();
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("refresh") && sender.hasPermission(ADMIN)) {
