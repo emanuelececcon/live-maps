@@ -1,6 +1,7 @@
 package io.github.emanuelececcon.livemaps;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.MapDecorations;
 import io.papermc.paper.datacomponent.item.MapId;
 import java.io.File;
 import java.io.IOException;
@@ -147,7 +148,10 @@ final class FrameRegistry {
         if (item == null || item.isEmpty() || !item.hasData(DataComponentTypes.MAP_ID)) {
             return "it is not a map";
         }
-        if (item.getType() != Material.FILLED_MAP || item.hasData(DataComponentTypes.MAP_DECORATIONS)) {
+        // Every map item has a map_decorations component (empty by default); explorer maps are
+        // their own item types since 26.x, and the ones that are not carry an actual marker.
+        MapDecorations decorations = item.getData(DataComponentTypes.MAP_DECORATIONS);
+        if (item.getType() != Material.FILLED_MAP || decorations != null && !decorations.decorations().isEmpty()) {
             return "treasure and explorer maps keep their own look";
         }
         MapView view = mapView(item);

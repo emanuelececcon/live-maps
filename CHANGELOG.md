@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1 - 2026-10-02
+- Fix: no framed map was followed. Every map item carries a `map_decorations` component, empty by default, and 1.0.0 took any map with that component for a treasure or explorer map. Explorer maps are now recognised by their item type or by an actual marker.
+
 ## 1.0.0 - 2026-10-02
 - First release.
 - Every plain Filled Map in an Item Frame or Glow Item Frame is kept up to date, with no setup. Locked maps, treasure and explorer maps, Nether maps and disabled worlds are left alone.
