@@ -1,5 +1,6 @@
 package io.github.emanuelececcon.livemaps;
 
+import java.util.logging.Level;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +20,11 @@ public final class LiveMapsPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         settings = Settings.load(getConfig());
+        try {
+            MapRevealerMigration.run(this);
+        } catch (RuntimeException exception) {
+            getLogger().log(Level.WARNING, "Could not unlock the maps of MapRevealer's walls", exception);
+        }
         engine = new RenderEngine(this, mapId -> registry.isLive(mapId));
         registry = new FrameRegistry(this, engine);
         registry.load();

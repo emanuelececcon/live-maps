@@ -9,13 +9,16 @@ website: https://github.com/emanuelececcon/live-maps
 
 commands:
   livemaps:
-    description: Map info, reveal the held map, refresh, status and reload
-    usage: /livemaps <info|reveal|refresh|status|reload>
+    description: Map info, fill a wall with maps, reveal the held map, refresh, status and reload
+    usage: /livemaps <info|fill [scale]|reveal|refresh|status|reload>
     aliases: [lm]
 
 permissions:
   livemaps.info:
     description: Use /livemaps info to see whether a map updates by itself
+    default: true
+  livemaps.fill:
+    description: Use /livemaps fill to put new, seamless maps into the empty frames of a wall
     default: true
   livemaps.reveal:
     description: Use /livemaps reveal to draw the whole held map at once
@@ -25,4 +28,5 @@ permissions:
     default: op
     children:
       livemaps.info: true
+      livemaps.fill: true
       livemaps.reveal: true

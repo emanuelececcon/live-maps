@@ -20,5 +20,9 @@ performance:
   # the drawing itself runs off the main thread. Lower it if a big redraw causes lag.
   chunks-per-batch: 32
 
+fill:
+  # Most empty frames /livemaps fill puts maps into at once.
+  max-frames: 100
+
 # Worlds whose maps are never updated by LiveMaps (world folder names).
 disabled-worlds: []

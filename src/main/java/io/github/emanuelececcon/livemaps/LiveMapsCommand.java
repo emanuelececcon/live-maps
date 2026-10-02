@@ -15,15 +15,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapView;
 import org.bukkit.util.RayTraceResult;
 
-/** /livemaps info | reveal | refresh [map id] | status | reload */
+/** /livemaps info | fill [scale] | reveal | refresh [map id] | status | reload */
 final class LiveMapsCommand implements TabExecutor {
 
     private static final String ADMIN = "livemaps.admin";
 
     private final LiveMapsPlugin plugin;
+    private final WallFiller filler;
 
     LiveMapsCommand(LiveMapsPlugin plugin) {
         this.plugin = plugin;
+        this.filler = new WallFiller(plugin);
     }
 
     @Override
@@ -31,12 +33,13 @@ final class LiveMapsCommand implements TabExecutor {
         String sub = args.length == 0 ? "info" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "info" -> info(sender);
+            case "fill" -> fill(sender, args);
             case "reveal" -> reveal(sender);
             case "refresh" -> refresh(sender, args);
             case "status" -> status(sender);
             case "reload" -> reload(sender);
             default -> sender.sendMessage(Component.text(
-                    "Usage: /" + label + " <info|reveal|refresh [map id]|status|reload>", NamedTextColor.RED));
+                    "Usage: /" + label + " <info|fill [scale]|reveal|refresh [map id]|status|reload>", NamedTextColor.RED));
         }
         return true;
     }
@@ -68,6 +71,37 @@ final class LiveMapsCommand implements TabExecutor {
         } else {
             sender.sendMessage(text(header + "it will update by itself once it is in an item frame."));
         }
+    }
+
+    /** Puts seamless new maps into the empty frames of the wall the player looks at. */
+    private void fill(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(text("Only players can fill a wall: look at one of its frames."));
+            return;
+        }
+        if (!allowed(sender, "livemaps.fill")) {
+            return;
+        }
+        Integer scale = null;
+        if (args.length >= 2) {
+            try {
+                scale = Integer.parseInt(args[1]);
+            } catch (NumberFormatException notANumber) {
+                scale = -1;
+            }
+            if (scale < 0 || scale > 4) {
+                sender.sendMessage(Component.text("The scale is 0 (1:1, 128 blocks per map) to 4 (1:16, 2048 blocks).",
+                        NamedTextColor.RED));
+                return;
+            }
+        }
+        ItemFrame frame = lookedAtFrame(player);
+        if (frame == null) {
+            sender.sendMessage(Component.text("Look at one of the wall's item frames (up to 6 blocks away).",
+                    NamedTextColor.RED));
+            return;
+        }
+        sender.sendMessage(filler.fill(player, frame, scale));
     }
 
     private void reveal(CommandSender sender) {
@@ -178,6 +212,9 @@ final class LiveMapsCommand implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
             List<String> options = new ArrayList<>(List.of("info"));
+            if (sender.hasPermission("livemaps.fill")) {
+                options.add("fill");
+            }
             if (sender.hasPermission("livemaps.reveal")) {
                 options.add("reveal");
             }
@@ -186,6 +223,9 @@ final class LiveMapsCommand implements TabExecutor {
             }
             String typed = args[0].toLowerCase(Locale.ROOT);
             return options.stream().filter(option -> option.startsWith(typed)).toList();
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("fill") && sender.hasPermission("livemaps.fill")) {
+            return List.of("0", "1", "2", "3", "4").stream().filter(scale -> scale.startsWith(args[1])).toList();
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("refresh") && sender.hasPermission(ADMIN)) {
             return plugin.registry().maps().stream().map(map -> String.valueOf(map.id))

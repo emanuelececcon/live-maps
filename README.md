@@ -8,7 +8,20 @@ A Paper 26.3 plugin that keeps every map in an item frame up to date. Build, dig
 - **Whole map at once.** When a map goes into a frame, everything the server has already generated in its area is drawn right away. Chunks that were never generated stay blank and fill in as soon as someone explores them. LiveMaps never generates terrain.
 - **Vanilla look.** Pixels are computed with the game's own map algorithm (26.3 `MapItem.update`): colours from the server's block definitions, the top block as vanilla sees it (grass, flowers and snow layers included), height shading with the checkerboard dither, water shaded by depth, and the most common colour per pixel on zoomed-out maps. Biome colours are an optional extra, see below.
 - **Only what changed.** A change redraws the pixels it touches (one block changes one pixel and the pixel south of it, which is shaded against it), not the whole map.
+- **Walls in one command.** `/livemaps fill` puts new maps into the empty frames of a wall so that they join up seamlessly, next to the maps already there or centred on you for a new wall.
 - **Left alone:** locked maps (Cartography Table + Glass Pane), treasure and explorer maps (they keep their own look), maps of a dimension with a ceiling such as the Nether (vanilla never draws those), and worlds listed in `disabled-worlds`.
+
+## Building a wall
+
+1. Hang Item Frames or Glow Item Frames side by side on a wall, in any shape. Frames on floors and ceilings don't count.
+2. Look at one of them and run `/livemaps fill`. Every empty frame connected to it gets a new map, drawn within seconds:
+   - **next to frames that already hold maps**, the new maps continue the grid of the nearest one, with its scale. This extends any wall, also walls made by hand or by other plugins whose maps are not on the vanilla grid;
+   - **on a wall without maps**, the middle of the wall shows where you stand. Add a scale for zoomed-out maps: `/livemaps fill 1` (1:2, 256 blocks per map) up to `/livemaps fill 4` (1:16, 2048 blocks). Default 0 (1:1, 128 blocks).
+3. To grow the wall later, hang more empty frames next to it and run `/livemaps fill` again.
+
+Frames that hold something are never touched. A map always shows north up and east to the right, whichever way the wall faces. Maps made by hand work too: put them in frames and they update by themselves.
+
+To stop a map updating, take it out of its frame. To keep a "photo", lock a copy in a Cartography Table with a Glass Pane and hang that.
 
 ## How changes are found
 
@@ -33,6 +46,7 @@ A player carrying a copy of a framed map redraws the area around them in vanilla
 | Command | Permission | What it does |
 |---|---|---|
 | `/livemaps info` | `livemaps.info` (everyone) | For the framed map you look at, or the map in your hand: does it update by itself, and if not, why |
+| `/livemaps fill [scale]` | `livemaps.fill` (everyone) | Puts seamless new maps into the empty frames of the wall you look at, see [Building a wall](#building-a-wall) |
 | `/livemaps reveal` | `livemaps.reveal` (op) | Draws the whole map in your hand from the generated terrain, once |
 | `/livemaps refresh [map id]` | `livemaps.admin` (op) | Redraws all framed maps, or one |
 | `/livemaps status` | `livemaps.admin` (op) | Framed maps, frames, queue and timings |
@@ -50,6 +64,7 @@ A player carrying a copy of a framed map redraws the area around them in vanilla
 | `updates.sweep-seconds` | Each loaded chunk shown on a framed map is checked again within this time; `0` turns the sweep off | `300` |
 | `rendering.biome-colors` | Biome colours for grass, foliage and leaf litter; `false` = exact vanilla colours. Run `/livemaps refresh` after changing it | `true` |
 | `performance.chunks-per-batch` | Chunks snapshotted per step; lower it if a big redraw causes lag | `32` |
+| `fill.max-frames` | Most empty frames one `/livemaps fill` fills | `100` |
 | `disabled-worlds` | World names whose maps LiveMaps never touches | `[]` |
 
 ## How it works
@@ -70,6 +85,8 @@ A player carrying a copy of a framed map redraws the area around them in vanilla
 | `BiomeTints.java` | Optional biome colours |
 | `MapWriter.java` | Writes pixels into the saved map data |
 | `MapArea.java`, `PixelRect.java` | Map pixel and world coordinates |
+| `WallFiller.java` | `/livemaps fill`: finds the wall, works out the grid, creates the maps |
+| `MapRevealerMigration.java` | One-time unlock of the maps MapRevealer locked on its walls |
 | `LiveMapsCommand.java` | `/livemaps` |
 
 Bukkit has no API to change a map's saved picture (map renderers only paint a per-player overlay), so `MapWriter` calls the server's `MapItemSavedData.updateColor` through reflection. That method stores the pixel, marks the map for saving and sends the change to everyone who sees the map. If a future server version changes it, LiveMaps logs an error and stops writing instead of breaking maps.
@@ -89,7 +106,7 @@ The jar is `target/live-maps-<version>.jar`. Released jars are in `release/` and
 1. Put the jar in `plugins/` and restart the server.
 2. Framed maps in loaded chunks are found at startup, the others when their chunks load. Each one is drawn in full the first time.
 
-Replacing MapRevealer: remove its jar first. Its map walls need no conversion, their maps are ordinary framed maps.
+Replacing MapRevealer: remove its jar first. Its map walls need no conversion, their maps are ordinary framed maps. MapRevealer locks the maps of its walls by default (only to keep the game from drawing over them), which would make LiveMaps leave them alone, so on the first start LiveMaps reads `plugins/MapRevealer/walls.yml` and unlocks the maps of those walls once. The unlocked map ids are listed in `plugins/LiveMaps/maprevealer-unlocked.yml`.
 
 ## License
 

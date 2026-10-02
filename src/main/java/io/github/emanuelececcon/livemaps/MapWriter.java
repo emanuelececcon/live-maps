@@ -37,6 +37,17 @@ final class MapWriter {
         return changed;
     }
 
+    /** Gets the map saved with the next world save, for changes Bukkit does not save by itself. */
+    void markDirty(MapView view) {
+        Object savedData = savedData(view);
+        try {
+            savedData.getClass().getMethod("setDirty").invoke(savedData);
+        } catch (ReflectiveOperationException | RuntimeException unsupported) {
+            throw new IllegalStateException("Could not mark map #" + view.getId() + " for saving (" + unsupported + ")",
+                    unsupported);
+        }
+    }
+
     private Object savedData(MapView view) {
         try {
             if (savedDataField == null) {

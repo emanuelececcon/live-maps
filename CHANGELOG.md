@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 - 2026-10-02
+- `/livemaps fill [scale]` (permission `livemaps.fill`, everyone): puts new maps into the empty frames of the wall you look at. Next to existing maps they continue the grid of the nearest one; on a wall without maps they are centred on you. Limit `fill.max-frames` (100).
+- Coming from MapRevealer: the maps it locked on its walls are unlocked once on the first start, so those walls keep updating. The ids are listed in `maprevealer-unlocked.yml`.
+
 ## 1.0.1 - 2026-10-02
 - Fix: no framed map was followed. Every map item carries a `map_decorations` component, empty by default, and 1.0.0 took any map with that component for a treasure or explorer map. Explorer maps are now recognised by their item type or by an actual marker.
 

@@ -7,7 +7,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 /** The values of config.yml, clamped to safe ranges. */
 record Settings(int delaySeconds, int sweepSeconds, boolean biomeColors, int chunksPerBatch,
-                Set<String> disabledWorlds) {
+                int fillMaxFrames, Set<String> disabledWorlds) {
 
     static Settings load(FileConfiguration config) {
         Set<String> disabled = new HashSet<>();
@@ -20,6 +20,7 @@ record Settings(int delaySeconds, int sweepSeconds, boolean biomeColors, int chu
                 sweep <= 0 ? 0 : Math.max(10, sweep),
                 config.getBoolean("rendering.biome-colors", true),
                 Math.clamp(config.getInt("performance.chunks-per-batch", 32), 4, 512),
+                Math.clamp(config.getInt("fill.max-frames", 100), 1, 1024),
                 Set.copyOf(disabled));
     }
 
